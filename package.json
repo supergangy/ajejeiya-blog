@@ -3,11 +3,13 @@
   "description": "종갓의 IT블로그 (ajejeiya.cloud)",
   "scripts": {
     "dev": "astro dev",
+    "prebuild": "node scripts/make-thumbs.mjs",
     "build": "astro build",
     "preview": "astro preview"
   },
   "type": "module",
   "dependencies": {
+    "@astrojs/markdown-satteri": "0.4.2",
     "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.7.4",
     "astro": "^7.3.5"

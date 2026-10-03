@@ -1,7 +1,7 @@
 ---
 import Base from "../../layouts/Base.astro";
 import PostList from "../../components/PostList.astro";
-import { getPosts, termSlug, type Post } from "../../lib/posts";
+import { getPosts, termSlug, summary, type Post } from "../../lib/posts";
 
 export async function getStaticPaths() {
   const posts = await getPosts();
@@ -15,7 +15,7 @@ export async function getStaticPaths() {
 interface Props { category: string; posts: Post[] }
 const { category, posts } = Astro.props;
 ---
-<Base title={category} description={`${category} 카테고리의 글`}>
+<Base title={category} description={summary(`${category} 글 ${posts.length}편: ${posts.map((p) => p.data.title).join(", ")}`)}>
   <header class="page-head">
     <p><a href="/categories/">카테고리</a></p>
     <h1>{category}</h1>

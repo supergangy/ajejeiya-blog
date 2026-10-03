@@ -1,12 +1,14 @@
 ---
-title: "구글 클라우드 서비스 계정 키(json)가 조직 정책으로 막힐 때: Vision API는 API 키로 해결"
-description: "서비스 계정 json 키 만들기가 조직 정책 때문에 막혔다면, Cloud Vision API는 API 키로 바로 쓸 수 있습니다. 콘솔과 Cloud Shell로 키를 만드는 방법과 파이썬 코드, 보안 주의점을 정리했습니다."
+title: "GCP 서비스 계정 키 생성 막힘: Cloud Vision은 API 키로 해결"
+description: "서비스 계정 키 생성이 iam.disableServiceAccountKeyCreation 정책으로 막혀도 Cloud Vision API는 API 키로 쓸 수 있습니다. 콘솔·Cloud Shell로 키 만들기, 파이썬 코드, 보안 수칙을 정리했습니다."
 pubDate: 2026-10-03
 category: "구글 클라우드"
 tags: ["구글 클라우드", "Cloud Vision", "API 키", "서비스 계정", "조직 정책"]
 cover: "/images/gcp-api-key-instead-of-service-account-key/cover.png"
 draft: false
 ---
+
+서비스 계정 json 키 생성이 `iam.disableServiceAccountKeyCreation` 조직 정책으로 막혔다면, 이미지를 보내 OCR만 하는 경우 Cloud Vision API는 API 키로 바로 쓸 수 있습니다. API 키는 이 정책의 영향을 받지 않습니다.
 
 스캔한 PDF를 검색되는 PDF로 바꾸는 [OCR 프로그램](/blog/pdf-ocr-program/)을 만들면서, 처음에는 인터넷 강좌를 따라 구글 Cloud Vision을 써 보려고 했습니다.
 
@@ -21,7 +23,7 @@ draft: false
 
 결론부터 말하면, <strong>이미지를 보내서 글자를 읽는 OCR만 할 거라면 json 키가 필요 없었습니다.</strong> Cloud Vision API는 API 키로도 쓸 수 있고, API 키는 그 정책의 영향을 받지 않습니다. 이 글에서는 왜 막히는지, 그리고 API 키로 어떻게 해결했는지를 정리합니다.
 
-## 왜 json 키 만들기가 막힐까
+## 서비스 계정 키 생성이 막히는 이유: iam.disableServiceAccountKeyCreation
 
 구글 클라우드에는 **조직 정책**이라는 것이 있습니다. 그중 `iam.disableServiceAccountKeyCreation`이라는 제약이 켜져 있으면 서비스 계정 키(json) 생성이 막힙니다.
 
@@ -36,7 +38,7 @@ draft: false
 
 프로젝트 소유자라도 조직 정책은 바꿀 수 없어서, 정책을 풀려면 조직 수준 권한부터 따로 받아야 합니다. 게다가 이 제약은 유출 위험을 줄이려고 걸어 둔 보안 장치라서, 굳이 끄기보다는 다른 길이 있는지 먼저 찾아보는 편이 낫습니다.
 
-## 해결: Vision API는 API 키로 쓸 수 있다
+## 해결: Cloud Vision API는 API 키로 인증할 수 있다
 
 Cloud Vision API는 **API 키 인증**을 지원합니다. API 키는 서비스 계정 키가 아니므로 위 정책에 걸리지 않습니다.
 
@@ -64,9 +66,9 @@ Cloud Vision API는 **API 키 인증**을 지원합니다. API 키는 서비스 
 
 > 4번의 키 제한은 꼭 해 주세요. 제한이 없으면 이 키로 다른 API도 호출할 수 있어서, 유출됐을 때 피해가 커집니다.
 
-## 방법 2: Cloud Shell에서 명령어로 만들기
+## 방법 2: Cloud Shell에서 gcloud 명령어로 API 키 만들기
 
-콘솔 메뉴를 찾아다니기 번거롭다면 Cloud Shell(브라우저에서 열리는 터미널)에서 명령어로 할 수도 있어요. 보통 콘솔 위쪽 도구 모음의 터미널 모양 아이콘(Cloud Shell 활성화)을 누르면 열립니다. 명령어는 현재 선택된 프로젝트에 적용되니, 프로젝트가 맞는지 먼저 확인해 주세요.
+콘솔 메뉴를 찾아다니기 번거롭다면 Cloud Shell(브라우저에서 열리는 터미널)에서 명령어로 할 수도 있어요. 보통 콘솔 위쪽 도구 모음의 터미널 모양 아이콘(Cloud Shell 활성화)을 누르면 열립니다. 아이콘이 안 보이면 [Cloud Shell 아이콘이 안 보일 때](/blog/cloud-shell-icon-missing/) 글처럼 주소로 바로 열 수 있습니다. 명령어는 현재 선택된 프로젝트에 적용되니, 프로젝트가 맞는지 먼저 확인해 주세요.
 
 먼저 필요한 API를 켭니다.
 
@@ -119,7 +121,7 @@ client = vision.ImageAnnotatorClient(credentials=credentials)
 
 클라이언트를 만드는 한 줄만 바뀌고, 이후 OCR 요청 코드는 같습니다.
 
-## 실제로 해 보니
+## 실제로 해 보니: 연결 테스트와 API_KEY_INVALID 오류
 
 만든 PDF OCR 프로그램에 API 키 입력 칸을 추가했더니, <strong>정책 문제 없이 바로 동작했습니다.</strong> 버킷도, 서비스 계정도, 역할 부여도 필요 없었어요.
 
@@ -164,6 +166,20 @@ API 키가 모든 걸 대신하지는 않습니다. 아래와 같은 경우에�
 | 서버끼리 인증해야 하는 작업 | 서비스 계정 필요 |
 
 강좌들이 버킷부터 만들었던 이유도 여기에 있습니다. PDF를 버킷에 올려서 처리하는 방식은 Cloud Storage 권한이 필요하니까 서비스 계정이 따라오는 거예요. 저는 [OCR 프로그램](/blog/pdf-ocr-program/)에서 PDF 페이지를 하나씩 이미지로 바꿔서 직접 보내는 방식을 택했기 때문에 버킷도 json 키도 필요 없었습니다.
+
+## 자주 묻는 질문
+
+### 프로젝트 소유자인데 왜 정책을 못 바꾸나요?
+
+조직 정책을 바꾸려면 조직 수준의 조직 정책 관리자 권한(`roles/orgpolicy.policyAdmin`)이 필요합니다. 프로젝트 소유자에게는 기본으로 이 권한이 없습니다.
+
+### API 키로 Cloud Storage 버킷도 쓸 수 있나요?
+
+아니요. 버킷 읽기·쓰기처럼 IAM 권한이 필요한 작업에는 서비스 계정이 필요합니다. API 키는 Vision처럼 API 키를 지원하는 API에 이미지를 직접 보낼 때 씁니다.
+
+### API 키를 써도 결제 연결이 필요한가요?
+
+네. API 키를 쓰더라도 프로젝트에 **결제 계정 연결**과 **Cloud Vision API 사용 설정**은 필요합니다.
 
 ## 정리: 막혔을 때 체크리스트
 

@@ -2,35 +2,106 @@
 import { render } from "astro:content";
 import Base from "../../layouts/Base.astro";
 import AdSlot from "../../components/AdSlot.astro";
-import { getPosts, postUrl, formatDate, readingMinutes, categoryUrl, tagUrl, type Post } from "../../lib/posts";
-import { ADSENSE_SLOTS } from "../../consts";
+import { getPosts, postUrl, formatDate, readingMinutes, categoryUrl, tagUrl, isoKst, type Post } from "../../lib/posts";
+import { ADSENSE_SLOTS, AUTHOR, SITE_TITLE } from "../../consts";
 
 export async function getStaticPaths() {
   const posts = await getPosts();
-  return posts.map((post, i) => ({
-    params: { slug: post.id },
-    // 목록은 최신순이므로 '다음 글'은 더 최근 글, '이전 글'은 더 오래된 글
-    props: { post, newer: posts[i - 1], older: posts[i + 1] },
-  }));
+  return posts.map((post, i) => {
+    // 관련 글: 같은 카테고리를 먼저, 그다음 겹치는 태그가 많은 순, 같으면 최신순. 최대 3개, 현재 글 제외.
+    const related = posts
+      .filter((p) => p.id !== post.id)
+      .map((p) => ({
+        p,
+        sameCategory: p.data.category === post.data.category ? 1 : 0,
+        sharedTags: p.data.tags.filter((t) => post.data.tags.includes(t)).length,
+      }))
+      .filter((x) => x.sameCategory || x.sharedTags)
+      .sort(
+        (a, b) =>
+          b.sameCategory - a.sameCategory ||
+          b.sharedTags - a.sharedTags ||
+          b.p.data.pubDate.valueOf() - a.p.data.pubDate.valueOf(),
+      )
+      .slice(0, 3)
+      .map((x) => x.p);
+    return {
+      params: { slug: post.id },
+      // 목록은 최신순이므로 '다음 글'은 더 최근 글, '이전 글'은 더 오래된 글
+      props: { post, newer: posts[i - 1], older: posts[i + 1], related },
+    };
+  });
 }
 
-interface Props { post: Post; newer?: Post; older?: Post }
-const { post, newer, older } = Astro.props;
+interface Props { post: Post; newer?: Post; older?: Post; related: Post[] }
+const { post, newer, older, related } = Astro.props;
 const { Content } = await render(post);
-const { title, description, pubDate, updatedDate, category, tags, cover } = post.data;
+const { title, description, pubDate, updatedDate, category, tags, cover, seoTitle, ogImage } = post.data;
+
+const site = Astro.site!;
+const SITE = site.href.replace(/\/$/, "");
+const canonical = new URL(postUrl(post), site).href;
+const shareImage = ogImage ?? cover;
+const images = [...new Set([ogImage, cover].filter((x): x is string => Boolean(x)))].map((src) => new URL(src, site).href);
+if (images.length === 0) images.push(new URL("/images/og-default.png", site).href);
+const person = { "@type": "Person", "@id": `${SITE}/#person`, name: AUTHOR, url: `${SITE}/about/` };
+
+const jsonLd = [
+  {
+    "@type": "BlogPosting",
+    "@id": `${canonical}#article`,
+    headline: title,
+    description,
+    image: images,
+    datePublished: isoKst(pubDate),
+    dateModified: isoKst(updatedDate ?? pubDate),
+    author: person,
+    publisher: person,
+    mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
+    url: canonical,
+    inLanguage: "ko-KR",
+    articleSection: category,
+    keywords: tags.join(", "),
+    isPartOf: { "@type": "Blog", "@id": `${SITE}/#blog`, name: SITE_TITLE, url: `${SITE}/` },
+  },
+  {
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "홈", item: `${SITE}/` },
+      { "@type": "ListItem", position: 2, name: category, item: new URL(categoryUrl(category), site).href },
+      { "@type": "ListItem", position: 3, name: title, item: canonical },
+    ],
+  },
+];
 ---
-<Base title={title} description={description} image={cover} type="article">
+<Base
+  title={title}
+  pageTitle={seoTitle ? `${seoTitle} | ${SITE_TITLE}` : undefined}
+  description={description}
+  image={shareImage}
+  type="article"
+  publishedTime={pubDate}
+  modifiedTime={updatedDate}
+  section={category}
+  tags={tags}
+  jsonLd={jsonLd}
+>
   <article>
     <header class="post-head">
-      <div class="meta">
+      <nav class="breadcrumb" aria-label="현재 위치">
+        <a href="/">홈</a>
+        <span aria-hidden="true">›</span>
         <a href={categoryUrl(category)}>{category}</a>
+      </nav>
+      <h1>{title}</h1>
+      <div class="meta">
+        <a href="/about/" rel="author">{AUTHOR}</a>
         <span aria-hidden="true">·</span>
-        <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
-        {updatedDate && <span>(수정 {formatDate(updatedDate)})</span>}
+        <time datetime={isoKst(pubDate)}>{formatDate(pubDate)}</time>
+        {updatedDate && <span>(수정 <time datetime={isoKst(updatedDate)}>{formatDate(updatedDate)}</time>)</span>}
         <span aria-hidden="true">·</span>
         <span>{readingMinutes(post.body)}분 읽기</span>
       </div>
-      <h1>{title}</h1>
       <p class="lede">{description}</p>
     </header>
 
@@ -47,6 +118,19 @@ const { title, description, pubDate, updatedDate, category, tags, cover } = post
         <div class="chips" aria-label="태그">
           {tags.map((tag) => <a class="chip" href={tagUrl(tag)}>#{tag}</a>)}
         </div>
+      )}
+      {related.length > 0 && (
+        <section class="related" aria-labelledby="related-title">
+          <h2 id="related-title">함께 읽으면 좋은 글</h2>
+          <ul>
+            {related.map((r) => (
+              <li>
+                <a href={postUrl(r)}>{r.data.title}</a>
+                <small>{r.data.category}</small>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
       {(older || newer) && (
         <nav class="pager" aria-label="다른 글">

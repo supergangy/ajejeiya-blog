@@ -2,12 +2,42 @@
 import Base from "../layouts/Base.astro";
 import PostList from "../components/PostList.astro";
 import { getPosts, countBy, categoryUrl } from "../lib/posts";
-import { SITE_DESCRIPTION } from "../consts";
+import { SITE_DESCRIPTION, SITE_TITLE, AUTHOR, GITHUB_URL, NAVER_BLOG_URL } from "../consts";
 
 const posts = await getPosts();
 const categories = countBy(posts, (p) => [p.data.category]);
+
+const SITE = Astro.site!.href.replace(/\/$/, "");
+// 검색 결과 설명문(80~120자). 사이트가 무엇을 다루는지 드러나게 쓴다.
+const homeDescription =
+  "스캔 PDF OCR 프로그램 등 직접 만든 무료 프로그램과 구글 클라우드, 파이썬, 블로그 운영(GitHub Pages·가비아 도메인)에서 겪은 문제와 해결 방법을 정리합니다.";
+// 구글은 WebSite의 name/alternateName을 검색 결과의 '사이트 이름'으로 참고한다.
+const jsonLd = [
+  {
+    "@type": "WebSite",
+    "@id": `${SITE}/#website`,
+    name: SITE_TITLE,
+    alternateName: ["종갓 IT블로그", "ajejeiya.cloud"],
+    url: `${SITE}/`,
+    inLanguage: "ko-KR",
+    description: homeDescription,
+    publisher: { "@id": `${SITE}/#person` },
+    potentialAction: {
+      "@type": "SearchAction",
+      target: { "@type": "EntryPoint", urlTemplate: `${SITE}/search/?q={search_term_string}` },
+      "query-input": "required name=search_term_string",
+    },
+  },
+  {
+    "@type": "Person",
+    "@id": `${SITE}/#person`,
+    name: AUTHOR,
+    url: `${SITE}/about/`,
+    sameAs: [GITHUB_URL, NAVER_BLOG_URL],
+  },
+];
 ---
-<Base>
+<Base pageTitle={`${SITE_TITLE} - 직접 만든 프로그램과 IT 팁`} description={homeDescription} jsonLd={jsonLd}>
   <section class="intro">
     <h1>직접 만들고, 써 보고, 정리합니다</h1>
     <p>{SITE_DESCRIPTION} 만든 프로그램은 모두 무료로 공개해요.</p>

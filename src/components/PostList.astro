@@ -1,14 +1,21 @@
 ---
 import { postUrl, formatDate, categoryUrl, type Post } from "../lib/posts";
+import { publicFileExists } from "../lib/image-size.mjs";
 
 interface Props { posts: Post[] }
 const { posts } = Astro.props;
+
+// 목록에는 작은 썸네일(cover-thumb.webp, scripts/make-thumbs.mjs가 만듦)을 쓰고, 없으면 원본 커버를 쓴다.
+const thumbOf = (cover: string) => {
+  const thumb = cover.replace(/\.(png|jpe?g)$/i, "-thumb.webp");
+  return thumb !== cover && publicFileExists(thumb) ? thumb : cover;
+};
 ---
 {posts.length === 0 ? (
   <p style="color: var(--muted)">아직 글이 없습니다.</p>
 ) : (
   <ul class="post-list">
-    {posts.map((post) => (
+    {posts.map((post, i) => (
       <li class="post-item">
         <div>
           <div class="meta">
@@ -21,7 +28,11 @@ const { posts } = Astro.props;
         </div>
         {post.data.cover && (
           <a class="thumb" href={postUrl(post)} tabindex="-1" aria-hidden="true">
-            <img src={post.data.cover} alt="" loading="lazy" width="168" height="168" />
+            {i === 0 ? (
+              <img src={thumbOf(post.data.cover)} alt="" width="168" height="168" loading="eager" fetchpriority="high" decoding="async" />
+            ) : (
+              <img src={thumbOf(post.data.cover)} alt="" width="168" height="168" loading="lazy" decoding="async" />
+            )}
           </a>
         )}
       </li>

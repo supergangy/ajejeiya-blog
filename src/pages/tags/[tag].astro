@@ -1,7 +1,7 @@
 ---
 import Base from "../../layouts/Base.astro";
 import PostList from "../../components/PostList.astro";
-import { getPosts, termSlug, type Post } from "../../lib/posts";
+import { getPosts, termSlug, summary, type Post } from "../../lib/posts";
 
 export async function getStaticPaths() {
   const posts = await getPosts();
@@ -14,8 +14,13 @@ export async function getStaticPaths() {
 
 interface Props { tag: string; posts: Post[] }
 const { tag, posts } = Astro.props;
+// 글이 1개뿐인 태그 페이지는 얇은 페이지라 noindex 처리하고 사이트맵에서도 뺀다(astro.config.mjs).
 ---
-<Base title={`#${tag}`} description={`'${tag}' 태그가 붙은 글`}>
+<Base
+  title={`#${tag}`}
+  description={summary(`'${tag}' 태그 글 ${posts.length}편: ${posts.map((p) => p.data.title).join(", ")}`)}
+  noindex={posts.length < 2}
+>
   <header class="page-head">
     <p><a href="/tags/">태그</a></p>
     <h1>#{tag}</h1>

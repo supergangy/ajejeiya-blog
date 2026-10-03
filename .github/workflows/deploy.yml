@@ -38,3 +38,19 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v5
+
+  # 배포가 끝나면 사이트맵의 주소를 IndexNow(Bing·네이버 등)에 알려 빨리 색인되게 한다.
+  # 키 파일: public/8cf0de4c061b6a5ebd4dc927c49c071f.txt
+  indexnow:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: IndexNow에 주소 제출
+        run: |
+          sleep 30
+          urls=$(curl -fsSL https://ajejeiya.cloud/sitemap-0.xml | grep -o '<loc>[^<]*</loc>' | sed -e 's/<loc>//' -e 's/<\/loc>//' | jq -R . | jq -s -c .)
+          echo "제출할 주소: $(echo "$urls" | jq length)개"
+          body=$(jq -n -c --argjson urls "$urls" '{host:"ajejeiya.cloud", key:"8cf0de4c061b6a5ebd4dc927c49c071f", keyLocation:"https://ajejeiya.cloud/8cf0de4c061b6a5ebd4dc927c49c071f.txt", urlList:$urls}')
+          code=$(curl -s -o /dev/null -w "%{http_code}" -X POST https://api.indexnow.org/indexnow -H "Content-Type: application/json; charset=utf-8" -d "$body")
+          echo "IndexNow 응답: $code"
+          # 200/202 = 접수. 그 밖의 응답이어도 배포는 실패로 만들지 않는다.

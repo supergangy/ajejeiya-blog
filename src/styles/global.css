@@ -143,3 +143,18 @@ h1, h2, h3 { line-height: 1.35; text-wrap: balance; letter-spacing: -0.01em; }
 
 .skip { position: absolute; left: -9999px; top: 8px; z-index: 20; background: var(--accent); color: var(--accent-ink); padding: 8px 14px; border-radius: 6px; }
 .skip:focus { left: 16px; }
+
+/* 글 위치(빵부스러기)·관련 글 */
+.breadcrumb { font-size: .85rem; color: var(--muted); display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.breadcrumb a { color: var(--muted); }
+.breadcrumb a:hover { color: var(--accent); }
+.post-head .meta + .lede { margin-top: 12px; }
+.related h2 { font-size: .8rem; letter-spacing: .08em; color: var(--muted); margin: 0 0 8px; font-weight: 700; }
+.related ul { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.related li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.related li a { color: var(--ink); font-weight: 600; min-width: 0; }
+.related li a:hover { color: var(--accent); }
+.related small { color: var(--muted); font-size: .82rem; white-space: nowrap; flex-shrink: 0; }
+@media (max-width: 640px) {
+  .related li { flex-direction: column; gap: 2px; }
+}

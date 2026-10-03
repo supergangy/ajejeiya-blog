@@ -12,3 +12,12 @@ export const ADSENSE_SLOTS = {
   postTop: "",
   postBottom: "",
 };
+
+// 검색엔진 소유 확인 값. 각 도구에서 "HTML 태그" 방식을 고르면 나오는 <meta ... content="값">의 content 값만 넣으면
+// 모든 페이지의 <head>에 해당 meta가 출력된다. 비어 있으면 출력하지 않는다.
+// - 구글 서치 콘솔: <meta name="google-site-verification" content="...">
+export const GOOGLE_SITE_VERIFICATION = "";
+// - 네이버 서치어드바이저: <meta name="naver-site-verification" content="...">
+export const NAVER_SITE_VERIFICATION = "";
+// - Bing 웹마스터 도구: <meta name="msvalidate.01" content="..."> (구글 서치 콘솔에서 가져오기로 확인하면 필요 없음)
+export const BING_SITE_VERIFICATION = "";
