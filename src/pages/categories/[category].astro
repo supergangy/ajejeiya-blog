@@ -17,9 +17,9 @@ const { category, posts } = Astro.props;
 ---
 <Base title={category} description={summary(`${category} 글 ${posts.length}편: ${posts.map((p) => p.data.title).join(", ")}`)}>
   <header class="page-head">
-    <p><a href="/categories/">카테고리</a></p>
+    <p class="page-kicker"><a href="/categories/">카테고리</a></p>
     <h1>{category}</h1>
-    <p>글 {posts.length}개</p>
+    <p class="page-count">글 {posts.length}편</p>
   </header>
   <PostList posts={posts} />
 </Base>

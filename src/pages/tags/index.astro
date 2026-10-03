@@ -7,7 +7,7 @@ const tags = countBy(await getPosts(), (p) => p.data.tags);
 <Base title="태그" description="태그별 글 모아보기">
   <header class="page-head">
     <h1>태그</h1>
-    <p>태그 {tags.length}개</p>
+    <p class="page-count">태그 {tags.length}개</p>
   </header>
   <ul class="term-list">
     {tags.map(([name, count]) => (

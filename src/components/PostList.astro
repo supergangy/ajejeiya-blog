@@ -1,5 +1,5 @@
 ---
-import { postUrl, formatDate, categoryUrl, type Post } from "../lib/posts";
+import { postUrl, formatDate, categoryUrl, isoKst, readingMinutes, type Post } from "../lib/posts";
 import { publicFileExists } from "../lib/image-size.mjs";
 
 interface Props { posts: Post[] }
@@ -12,16 +12,18 @@ const thumbOf = (cover: string) => {
 };
 ---
 {posts.length === 0 ? (
-  <p style="color: var(--muted)">아직 글이 없습니다.</p>
+  <p class="empty">아직 글이 없습니다.</p>
 ) : (
   <ul class="post-list">
     {posts.map((post, i) => (
       <li class="post-item">
         <div>
-          <div class="meta">
+          <div class="meta-line">
             <a href={categoryUrl(post.data.category)}>{post.data.category}</a>
-            <span aria-hidden="true">·</span>
-            <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
+            <span aria-hidden="true">/</span>
+            <time datetime={isoKst(post.data.pubDate)}>{formatDate(post.data.pubDate)}</time>
+            <span aria-hidden="true">/</span>
+            <span><span class="num">{readingMinutes(post.body)}</span>분</span>
           </div>
           <h2><a href={postUrl(post)}>{post.data.title}</a></h2>
           <p>{post.data.description}</p>
@@ -29,9 +31,9 @@ const thumbOf = (cover: string) => {
         {post.data.cover && (
           <a class="thumb" href={postUrl(post)} tabindex="-1" aria-hidden="true">
             {i === 0 ? (
-              <img src={thumbOf(post.data.cover)} alt="" width="168" height="168" loading="eager" fetchpriority="high" decoding="async" />
+              <img src={thumbOf(post.data.cover)} alt="" width="120" height="120" loading="eager" fetchpriority="high" decoding="async" />
             ) : (
-              <img src={thumbOf(post.data.cover)} alt="" width="168" height="168" loading="lazy" decoding="async" />
+              <img src={thumbOf(post.data.cover)} alt="" width="120" height="120" loading="lazy" decoding="async" />
             )}
           </a>
         )}

@@ -35,7 +35,10 @@ export async function getStaticPaths() {
 
 interface Props { post: Post; newer?: Post; older?: Post; related: Post[] }
 const { post, newer, older, related } = Astro.props;
-const { Content } = await render(post);
+const { Content, headings } = await render(post);
+// 목차: h2·h3만. 제목이 3개 미만인 짧은 글은 목차를 그리지 않는다.
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+const showToc = toc.length >= 3;
 const { title, description, pubDate, updatedDate, category, tags, cover, seoTitle, ogImage } = post.data;
 
 const site = Astro.site!;
@@ -85,59 +88,200 @@ const jsonLd = [
   section={category}
   tags={tags}
   jsonLd={jsonLd}
+  narrow={false}
 >
-  <article>
-    <header class="post-head">
-      <nav class="breadcrumb" aria-label="현재 위치">
-        <a href="/">홈</a>
-        <span aria-hidden="true">›</span>
-        <a href={categoryUrl(category)}>{category}</a>
-      </nav>
-      <h1>{title}</h1>
-      <div class="meta">
-        <a href="/about/" rel="author">{AUTHOR}</a>
-        <span aria-hidden="true">·</span>
-        <time datetime={isoKst(pubDate)}>{formatDate(pubDate)}</time>
-        {updatedDate && <span>(수정 <time datetime={isoKst(updatedDate)}>{formatDate(updatedDate)}</time>)</span>}
-        <span aria-hidden="true">·</span>
-        <span>{readingMinutes(post.body)}분 읽기</span>
-      </div>
-      <p class="lede">{description}</p>
-    </header>
-
-    <AdSlot slot={ADSENSE_SLOTS.postTop} />
-
-    <div class="prose">
-      <Content />
-    </div>
-
-    <AdSlot slot={ADSENSE_SLOTS.postBottom} />
-
-    <footer class="post-foot">
-      {tags.length > 0 && (
-        <div class="chips" aria-label="태그">
-          {tags.map((tag) => <a class="chip" href={tagUrl(tag)}>#{tag}</a>)}
+  <div class:list={["post-shell", { "has-toc": showToc }]}>
+    <article class="post">
+      <header class="post-head">
+        <div class="post-kicker">
+          <nav class="breadcrumb" aria-label="현재 위치">
+            <a href="/">홈</a>
+            <span aria-hidden="true">/</span>
+            <a href={categoryUrl(category)}>{category}</a>
+          </nav>
+          <div class="meta">
+            <a href="/about/" rel="author">{AUTHOR}</a>
+            <span aria-hidden="true">·</span>
+            <time datetime={isoKst(pubDate)}>{formatDate(pubDate)}</time>
+            {updatedDate && <span>(수정 <time datetime={isoKst(updatedDate)}>{formatDate(updatedDate)}</time>)</span>}
+            <span aria-hidden="true">·</span>
+            <span><span class="num">{readingMinutes(post.body)}</span>분 읽기</span>
+          </div>
         </div>
-      )}
-      {related.length > 0 && (
-        <section class="related" aria-labelledby="related-title">
-          <h2 id="related-title">함께 읽으면 좋은 글</h2>
-          <ul>
-            {related.map((r) => (
-              <li>
-                <a href={postUrl(r)}>{r.data.title}</a>
-                <small>{r.data.category}</small>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-      {(older || newer) && (
-        <nav class="pager" aria-label="다른 글">
-          {older && <a class="prev" href={postUrl(older)}><small>← 이전 글</small>{older.data.title}</a>}
-          {newer && <a class="next" href={postUrl(newer)}><small>다음 글 →</small>{newer.data.title}</a>}
-        </nav>
-      )}
-    </footer>
-  </article>
+        <h1>{title}</h1>
+        <p class="lede">{description}</p>
+        {showToc && (
+          <details class="toc-mobile">
+            <summary>이 글의 목차</summary>
+            <ol>
+              {toc.map((h) => <li class={`d${h.depth}`}><a href={`#${h.slug}`}>{h.text}</a></li>)}
+            </ol>
+          </details>
+        )}
+      </header>
+
+      <AdSlot slot={ADSENSE_SLOTS.postTop} />
+
+      <div class="prose post-body">
+        <div class="read-progress" aria-hidden="true"></div>
+        <Content />
+      </div>
+      <p class="sr-only" aria-live="polite" id="copy-status"></p>
+      <script is:inline>
+        // 코드 블록에 머리줄(언어 + 복사 버튼)을 붙이고, 본문 제목에 # 링크를 단다. 본문 바로 뒤에서 그리기 전에 실행된다.
+        (() => {
+          const status = document.getElementById("copy-status");
+          const canCopy = !!(navigator.clipboard && window.isSecureContext);
+          document.querySelectorAll(".post-body pre.astro-code").forEach((pre) => {
+            const frame = document.createElement("div");
+            frame.className = "code-frame";
+            const head = document.createElement("div");
+            head.className = "code-head";
+            const lang = document.createElement("span");
+            const l = pre.dataset.language;
+            lang.textContent = l && l !== "text" && l !== "plaintext" ? l : "";
+            head.append(lang);
+            if (canCopy) {
+              const btn = document.createElement("button");
+              btn.type = "button";
+              btn.className = "code-copy";
+              btn.textContent = "복사";
+              let timer;
+              btn.addEventListener("click", async () => {
+                const text = (pre.querySelector("code") || pre).innerText.trimEnd();
+                let ok = false;
+                try {
+                  await navigator.clipboard.writeText(text);
+                  ok = true;
+                } catch (e) {
+                  // 클립보드 권한이 막힌 환경(일부 웹뷰 등)에서는 예전 방식으로 한 번 더 시도
+                  try {
+                    const ta = document.createElement("textarea");
+                    ta.value = text;
+                    ta.setAttribute("readonly", "");
+                    ta.style.cssText = "position:fixed;top:0;left:0;opacity:0";
+                    document.body.append(ta);
+                    ta.select();
+                    ok = document.execCommand("copy");
+                    ta.remove();
+                  } catch (e2) {}
+                }
+                btn.textContent = ok ? "복사됨" : "복사 실패";
+                btn.classList.toggle("is-copied", ok);
+                if (status) status.textContent = ok ? "코드를 복사했습니다" : "코드를 복사하지 못했습니다";
+                clearTimeout(timer);
+                timer = setTimeout(() => {
+                  btn.textContent = "복사";
+                  btn.classList.remove("is-copied");
+                  if (status) status.textContent = "";
+                }, 1500);
+              });
+              head.append(btn);
+            }
+            pre.before(frame);
+            frame.append(head, pre);
+          });
+          // 표는 감싸서 넓은 화면에서는 본문 폭을 채우고, 좁은 화면에서는 감싼 상자 안에서만 가로로 넘긴다
+          document.querySelectorAll(".post-body table").forEach((t) => {
+            if (t.parentElement && t.parentElement.classList.contains("table-wrap")) return;
+            const w = document.createElement("div");
+            w.className = "table-wrap";
+            t.before(w);
+            w.append(t);
+          });
+          // 짧은 인라인 코드(--api-target 등)가 하이픈에서 "-" / "-api-target"처럼 쪼개지지 않게 한다. 긴 것은 그대로 줄바꿈 허용
+          document.querySelectorAll(".post-body p > code, .post-body li > code").forEach((c) => {
+            const s = c.textContent || "";
+            if (s.length <= 28 && !/\s/.test(s)) c.classList.add("nowrap");
+          });
+          document.querySelectorAll(".post-body h2[id], .post-body h3[id]").forEach((h) => {
+            const a = document.createElement("a");
+            a.className = "h-anchor";
+            a.href = `#${h.id}`;
+            a.setAttribute("aria-label", "이 섹션 링크");
+            a.textContent = "#";
+            h.append(a);
+          });
+        })();
+      </script>
+
+      <AdSlot slot={ADSENSE_SLOTS.postBottom} />
+
+      <footer class="post-foot">
+        {tags.length > 0 && (
+          <div class="chips" aria-label="태그">
+            {tags.map((tag) => <a class="chip" href={tagUrl(tag)}>#{tag}</a>)}
+          </div>
+        )}
+        {related.length > 0 && (
+          <section class="related" aria-labelledby="related-title">
+            <h2 id="related-title">함께 읽으면 좋은 글</h2>
+            <ul>
+              {related.map((r) => (
+                <li>
+                  <a href={postUrl(r)}>{r.data.title}</a>
+                  <small>{r.data.category} / <time datetime={isoKst(r.data.pubDate)}>{formatDate(r.data.pubDate)}</time></small>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+        {(older || newer) && (
+          <nav class="pager" aria-label="다른 글">
+            {older && <a class="prev" href={postUrl(older)}><small>← 이전 글</small><span>{older.data.title}</span></a>}
+            {newer && <a class="next" href={postUrl(newer)}><small>다음 글 →</small><span>{newer.data.title}</span></a>}
+          </nav>
+        )}
+      </footer>
+    </article>
+
+    {showToc && (
+      <aside class="toc" aria-labelledby="toc-title">
+        <p id="toc-title" class="toc-title">이 글의 목차</p>
+        <ol>
+          {toc.map((h) => <li class={`d${h.depth}`}><a href={`#${h.slug}`}>{h.text}</a></li>)}
+        </ol>
+        <a class="toc-top" href="#main">맨 위로 ↑</a>
+      </aside>
+    )}
+  </div>
+
+  {showToc && (
+    <script is:inline>
+      // 목차에서 지금 읽는 제목을 표시한다(넓은 화면). JS가 없어도 목차 링크는 그대로 동작한다.
+      (() => {
+        const links = [...document.querySelectorAll('.toc a[href^="#"]')];
+        if (!links.length) return;
+        const byId = new Map(links.map((a) => [decodeURIComponent(a.hash.slice(1)), a]));
+        const heads = [...document.querySelectorAll(".post-body h2[id], .post-body h3[id]")].filter((h) => byId.has(h.id));
+        // 화면 위 30% 선을 이미 지난 마지막 제목을 '지금 읽는 제목'으로 본다.
+        // 스크롤 위치로 직접 계산하므로 새로고침·빠른 이동 뒤에도 바로 맞는 항목이 표시된다.
+        let current = null;
+        let ticking = false;
+        const update = () => {
+          ticking = false;
+          const line = innerHeight * 0.3;
+          let active = null;
+          for (const h of heads) {
+            if (h.getBoundingClientRect().top <= line) active = h;
+            else break;
+          }
+          // 맨 아래까지 내려 마지막 짧은 절이 30% 선에 닿지 못해도 마지막으로 보이는 제목을 표시
+          if (innerHeight + scrollY >= document.documentElement.scrollHeight - 2) {
+            for (const h of heads) if (h.getBoundingClientRect().top < innerHeight) active = h;
+          }
+          const link = active ? byId.get(active.id) : null;
+          if (link === current) return;
+          if (current) current.removeAttribute("aria-current");
+          if (link) link.setAttribute("aria-current", "location");
+          current = link;
+        };
+        addEventListener("scroll", () => {
+          if (!ticking) { ticking = true; requestAnimationFrame(update); }
+        }, { passive: true });
+        addEventListener("resize", update, { passive: true });
+        update();
+      })();
+    </script>
+  )}
 </Base>

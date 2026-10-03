@@ -22,9 +22,9 @@ const { tag, posts } = Astro.props;
   noindex={posts.length < 2}
 >
   <header class="page-head">
-    <p><a href="/tags/">태그</a></p>
+    <p class="page-kicker"><a href="/tags/">태그</a></p>
     <h1>#{tag}</h1>
-    <p>글 {posts.length}개</p>
+    <p class="page-count">글 {posts.length}편</p>
   </header>
   <PostList posts={posts} />
 </Base>

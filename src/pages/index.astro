@@ -1,11 +1,16 @@
 ---
 import Base from "../layouts/Base.astro";
 import PostList from "../components/PostList.astro";
-import { getPosts, countBy, categoryUrl } from "../lib/posts";
+import { getPosts, countBy, categoryUrl, formatDate, isoKst } from "../lib/posts";
 import { SITE_DESCRIPTION, SITE_TITLE, AUTHOR, GITHUB_URL, NAVER_BLOG_URL } from "../consts";
 
 const posts = await getPosts();
 const categories = countBy(posts, (p) => [p.data.category]);
+// 머리말 한 줄에 넣을 실제 값(빌드할 때 계산)
+const lastUpdated = posts.reduce<Date | undefined>((max, p) => {
+  const d = p.data.updatedDate ?? p.data.pubDate;
+  return !max || d > max ? d : max;
+}, undefined);
 
 const SITE = Astro.site!.href.replace(/\/$/, "");
 // 검색 결과 설명문(80~120자). 사이트가 무엇을 다루는지 드러나게 쓴다.
@@ -39,19 +44,30 @@ const jsonLd = [
 ---
 <Base pageTitle={`${SITE_TITLE} - 직접 만든 프로그램과 IT 팁`} description={homeDescription} jsonLd={jsonLd}>
   <section class="intro">
-    <h1>직접 만들고, 써 보고, 정리합니다</h1>
+    <p class="eyebrow">
+      <span>글 <span class="num">{posts.length}</span>편</span><span aria-hidden="true">/</span><span>카테고리 <span class="num">{categories.length}</span>개</span>
+      {lastUpdated && <><span aria-hidden="true">/</span><span>업데이트 <time datetime={isoKst(lastUpdated)}>{formatDate(lastUpdated)}</time></span></>}
+    </p>
+    <h1><span class="phrase">직접 만들고,</span> <span class="phrase">써 보고,</span> <span class="phrase">정리합니다</span></h1>
     <p>{SITE_DESCRIPTION} 만든 프로그램은 모두 무료로 공개해요.</p>
   </section>
 
   {categories.length > 0 && (
-    <ul class="term-list" aria-label="카테고리">
+    <ul class="cat-index" aria-label="카테고리">
       {categories.map(([name, count]) => (
-        <li><a href={categoryUrl(name)}>{name}<span>{count}</span></a></li>
+        <li>
+          <a href={categoryUrl(name)}>
+            <span>{name}</span>
+            <span class="count num">{String(count).padStart(2, "0")}<span class="sr-only">편</span></span>
+          </a>
+        </li>
       ))}
     </ul>
   )}
 
-  <h2 class="section-title">최근 글</h2>
+  <div class="section-head">
+    <h2 class="section-title">최근 글</h2>
+    <a href="/blog/">전체 글 <span class="num">{posts.length}</span> →</a>
+  </div>
   <PostList posts={posts.slice(0, 10)} />
-  {posts.length > 10 && <p style="margin-top:20px"><a href="/blog/">글 전체 보기 →</a></p>}
 </Base>

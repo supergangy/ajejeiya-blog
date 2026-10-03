@@ -6,10 +6,10 @@ import Base from "../layouts/Base.astro";
     <h1>검색</h1>
     <p>제목, 내용, 태그에서 찾습니다.</p>
   </header>
-  <label for="q" class="section-title" style="display:block;margin-top:0">검색어</label>
+  <label for="q" class="field-label">검색어</label>
   <input id="q" class="search-box" type="search" placeholder="예) OCR, PDF" autocomplete="off" />
-  <p id="status" style="color: var(--muted); font-size: .9rem; margin: 12px 0 0;" role="status"></p>
-  <ul class="post-list" id="results" style="margin-top: 12px"></ul>
+  <p id="status" class="search-status" role="status"></p>
+  <ul class="post-list search-results" id="results"></ul>
 
   <script is:inline>
     const input = document.getElementById("q");
@@ -34,9 +34,9 @@ import Base from "../layouts/Base.astro";
       });
       status.textContent = hits.length ? `${hits.length}개 찾음` : "찾는 글이 없어요. 다른 단어로 검색해 보세요.";
       list.innerHTML = hits.map((it) => `
-        <li class="post-item" style="grid-template-columns: minmax(0,1fr)">
+        <li class="post-item">
           <div>
-            <div class="meta"><span>${esc(it.category)}</span><span>·</span><span>${esc(it.date)}</span></div>
+            <div class="meta-line"><span>${esc(it.category)}</span><span aria-hidden="true">/</span><span class="num">${esc(it.date)}</span></div>
             <h2><a href="${it.url}">${esc(it.title)}</a></h2>
             <p>${esc(snippet(it, words))}</p>
           </div>
