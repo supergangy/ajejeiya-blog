@@ -2,9 +2,9 @@ import { getCollection, type CollectionEntry } from "astro:content";
 
 export type Post = CollectionEntry<"blog">;
 
-/** 공개된 글을 최신순으로 */
+/** 공개된 글을 최신순으로. 로컬 미리보기(npm run dev)에서는 draft 글도 보여 준다. */
 export async function getPosts(): Promise<Post[]> {
-  const posts = await getCollection("blog", ({ data }) => !data.draft);
+  const posts = await getCollection("blog", ({ data }) => import.meta.env.DEV || !data.draft);
   return posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 }
 
