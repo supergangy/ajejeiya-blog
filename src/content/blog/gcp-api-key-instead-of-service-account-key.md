@@ -5,7 +5,7 @@ pubDate: 2026-10-03
 category: "구글 클라우드"
 tags: ["구글 클라우드", "Cloud Vision", "API 키", "서비스 계정", "조직 정책"]
 cover: "/images/gcp-api-key-instead-of-service-account-key/cover.png"
-draft: true
+draft: false
 ---
 
 스캔한 PDF를 검색되는 PDF로 바꾸는 [OCR 프로그램](/blog/pdf-ocr-program/)을 만들면서, 처음에는 인터넷 강좌를 따라 구글 Cloud Vision을 써 보려고 했습니다.

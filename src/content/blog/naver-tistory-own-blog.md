@@ -5,7 +5,7 @@ pubDate: 2026-10-03
 category: "블로그 운영"
 tags: ["네이버 블로그", "티스토리", "블로그 플랫폼", "애드센스", "Astro"]
 cover: "/images/naver-tistory-own-blog/cover.png"
-draft: true
+draft: false
 ---
 
 [PDF OCR 프로그램](/blog/pdf-ocr-program/)을 만들고 나서 처음에는 **네이버 블로그**에 소개 글을 올렸습니다. 가장 익숙하고, 바로 시작할 수 있었으니까요.

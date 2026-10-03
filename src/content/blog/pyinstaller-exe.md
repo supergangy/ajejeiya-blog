@@ -5,7 +5,7 @@ pubDate: 2026-10-03
 category: "개발 팁"
 tags: ["파이썬", "PyInstaller", "exe 만들기", "tkinter", "구글 Cloud Vision"]
 cover: "/images/pyinstaller-exe/cover.png"
-draft: true
+draft: false
 ---
 
 스캔 PDF를 검색되는 PDF로 바꿔 주는 [PDF OCR 프로그램](/blog/pdf-ocr-program/)을 파이썬으로 만들었습니다. 제 컴퓨터에서는 잘 돌아갔는데, 문제는 **파이썬이 없는 컴퓨터**였어요. 다른 사람에게 "파이썬 설치하고, pip로 라이브러리 깔고, 명령어로 실행하세요"라고 할 수는 없으니까요.

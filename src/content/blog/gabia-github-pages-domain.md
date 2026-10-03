@@ -5,7 +5,7 @@ pubDate: 2026-10-03
 category: "블로그 운영"
 tags: ["가비아", "GitHub Pages", "도메인 연결", "DNS", "네임서버"]
 cover: "/images/gabia-github-pages-domain/cover.png"
-draft: true
+draft: false
 ---
 
 이 블로그는 Astro로 만들고 GitHub Pages로 배포합니다. 주소는 가비아에서 산 도메인 `ajejeiya.cloud`를 씁니다. 인터넷에 나온 대로 가비아 DNS에 레코드를 넣었는데, <strong>레코드는 분명히 맞는데 사이트가 열리지 않았습니다.</strong>
