@@ -1,6 +1,6 @@
 ---
 import Base from "../layouts/Base.astro";
-import { SITE_TITLE } from "../consts";
+import { EMAIL, SITE_TITLE } from "../consts";
 
 const effective = "2026년 10월 3일";
 ---
@@ -47,7 +47,7 @@ const effective = "2026년 10월 3일";
     <p>블로그에 연결된 외부 사이트(GitHub, 네이버 블로그 등)의 개인정보 처리는 해당 사이트의 방침을 따릅니다.</p>
 
     <h2>6. 문의</h2>
-    <p>개인정보와 관련된 문의는 <a href="/contact/">문의 페이지</a>의 방법으로 연락해 주세요.</p>
+    <p>개인정보와 관련된 문의는 이메일(<a href={`mailto:${EMAIL}`}>{EMAIL}</a>)로 보내 주세요.</p>
 
     <h2>7. 변경</h2>
     <p>이 방침이 바뀌면 이 페이지에 시행일과 함께 알립니다.</p>

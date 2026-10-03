@@ -1,6 +1,6 @@
 ---
 import Base from "../layouts/Base.astro";
-import { AUTHOR, GITHUB_URL, NAVER_BLOG_URL, SITE_TITLE } from "../consts";
+import { AUTHOR, EMAIL, GITHUB_URL, NAVER_BLOG_URL, SITE_TITLE } from "../consts";
 ---
 <Base title="소개" description={`${SITE_TITLE}와 운영자 ${AUTHOR} 소개`}>
   <header class="page-head">
@@ -25,6 +25,6 @@ import { AUTHOR, GITHUB_URL, NAVER_BLOG_URL, SITE_TITLE } from "../consts";
       <li>GitHub: <a href={GITHUB_URL}>{GITHUB_URL}</a></li>
       <li>네이버 블로그: <a href={NAVER_BLOG_URL}>{NAVER_BLOG_URL}</a></li>
     </ul>
-    <p>문의는 <a href="/contact/">문의 페이지</a>를 이용해 주세요.</p>
+    <p>문의: <a href={`mailto:${EMAIL}`}>{EMAIL}</a> (<a href="/contact/">문의 페이지</a>)</p>
   </div>
 </Base>
