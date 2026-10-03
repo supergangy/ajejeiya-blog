@@ -1,0 +1,59 @@
+---
+import Base from "../layouts/Base.astro";
+---
+<Base title="검색" description="블로그 글 검색">
+  <header class="page-head">
+    <h1>검색</h1>
+    <p>제목, 내용, 태그에서 찾습니다.</p>
+  </header>
+  <label for="q" class="section-title" style="display:block;margin-top:0">검색어</label>
+  <input id="q" class="search-box" type="search" placeholder="예) OCR, PDF" autocomplete="off" />
+  <p id="status" style="color: var(--muted); font-size: .9rem; margin: 12px 0 0;" role="status"></p>
+  <ul class="post-list" id="results" style="margin-top: 12px"></ul>
+
+  <script is:inline>
+    const input = document.getElementById("q");
+    const list = document.getElementById("results");
+    const status = document.getElementById("status");
+    let items = [];
+    const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+    function snippet(item, words) {
+      const text = item.body;
+      const at = Math.max(0, text.toLowerCase().indexOf(words[0]) - 40);
+      return (at > 0 ? "…" : "") + text.slice(at, at + 140) + "…";
+    }
+
+    function run() {
+      const q = input.value.trim().toLowerCase();
+      const words = q.split(/\s+/).filter(Boolean);
+      if (!words.length) { list.innerHTML = ""; status.textContent = `글 ${items.length}개에서 찾을 수 있어요.`; return; }
+      const hits = items.filter((it) => {
+        const hay = [it.title, it.description, it.category, it.tags.join(" "), it.body].join(" ").toLowerCase();
+        return words.every((w) => hay.includes(w));
+      });
+      status.textContent = hits.length ? `${hits.length}개 찾음` : "찾는 글이 없어요. 다른 단어로 검색해 보세요.";
+      list.innerHTML = hits.map((it) => `
+        <li class="post-item" style="grid-template-columns: minmax(0,1fr)">
+          <div>
+            <div class="meta"><span>${esc(it.category)}</span><span>·</span><span>${esc(it.date)}</span></div>
+            <h2><a href="${it.url}">${esc(it.title)}</a></h2>
+            <p>${esc(snippet(it, words))}</p>
+          </div>
+        </li>`).join("");
+    }
+
+    fetch("/search.json").then((r) => r.json()).then((data) => {
+      items = data;
+      const q = new URLSearchParams(location.search).get("q");
+      if (q) input.value = q;
+      run();
+    }).catch(() => { status.textContent = "검색 목록을 불러오지 못했어요. 새로고침해 주세요."; });
+    input.addEventListener("input", () => {
+      run();
+      const url = new URL(location.href);
+      input.value ? url.searchParams.set("q", input.value) : url.searchParams.delete("q");
+      history.replaceState(null, "", url);
+    });
+  </script>
+</Base>

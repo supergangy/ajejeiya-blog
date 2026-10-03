@@ -1,0 +1,55 @@
+---
+import Base from "../layouts/Base.astro";
+import { SITE_TITLE } from "../consts";
+
+const effective = "2026년 10월 3일";
+---
+<Base title="개인정보처리방침" description={`${SITE_TITLE} 개인정보처리방침`}>
+  <header class="page-head">
+    <h1>개인정보처리방침</h1>
+    <p>시행일: {effective}</p>
+  </header>
+  <div class="prose">
+    <p>
+      {SITE_TITLE}(https://ajejeiya.cloud, 이하 "블로그")는 방문자의 개인정보를 중요하게 생각하며,
+      「개인정보 보호법」 등 관련 법령을 지킵니다.
+    </p>
+
+    <h2>1. 수집하는 개인정보</h2>
+    <p>
+      블로그는 회원가입, 댓글, 문의 양식 기능이 없으며 방문자의 이름, 이메일 같은 개인정보를 직접 수집하지 않습니다.
+      다만 아래 제3자 서비스가 쿠키 등을 통해 정보를 수집할 수 있습니다.
+    </p>
+
+    <h2>2. 쿠키와 광고</h2>
+    <p>블로그는 Google AdSense를 통해 광고를 게재할 수 있습니다.</p>
+    <ul>
+      <li>Google을 포함한 제3자 광고 업체는 쿠키를 사용해 방문자가 이 블로그나 다른 웹사이트를 이전에 방문한 기록을 바탕으로 광고를 보여 줍니다.</li>
+      <li>Google은 광고 쿠키를 사용해 방문자에게 이 블로그 및 인터넷의 다른 사이트 방문 기록에 맞는 광고를 게재합니다.</li>
+      <li>방문자는 <a href="https://adssettings.google.com">Google 광고 설정</a>에서 맞춤 광고를 끌 수 있습니다. 또는 <a href="https://www.aboutads.info/choices/">www.aboutads.info</a>에서 제3자 업체의 맞춤 광고용 쿠키를 끌 수 있습니다.</li>
+      <li>Google이 정보를 사용하는 방식은 <a href="https://policies.google.com/technologies/partner-sites">Google 파트너 사이트 정책</a>에서 확인할 수 있습니다.</li>
+    </ul>
+    <p>쿠키는 브라우저 설정에서 거부하거나 삭제할 수 있습니다. 쿠키를 거부해도 블로그 글은 그대로 읽을 수 있습니다.</p>
+
+    <h2>3. 브라우저 저장소</h2>
+    <p>
+      화면 테마(밝게/어둡게) 선택을 기억하기 위해 방문자의 브라우저에 설정값을 저장합니다.
+      이 값은 방문자의 기기에만 저장되며 블로그 운영자에게 전송되지 않습니다.
+    </p>
+
+    <h2>4. 웹 호스팅</h2>
+    <p>
+      블로그는 GitHub Pages로 운영됩니다. GitHub는 보안과 서비스 운영을 위해 접속 IP 주소 등의 기록을 남길 수 있으며,
+      자세한 내용은 <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement">GitHub 개인정보처리방침</a>을 따릅니다.
+    </p>
+
+    <h2>5. 외부 링크</h2>
+    <p>블로그에 연결된 외부 사이트(GitHub, 네이버 블로그 등)의 개인정보 처리는 해당 사이트의 방침을 따릅니다.</p>
+
+    <h2>6. 문의</h2>
+    <p>개인정보와 관련된 문의는 <a href="/contact/">문의 페이지</a>의 방법으로 연락해 주세요.</p>
+
+    <h2>7. 변경</h2>
+    <p>이 방침이 바뀌면 이 페이지에 시행일과 함께 알립니다.</p>
+  </div>
+</Base>

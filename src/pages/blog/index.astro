@@ -1,0 +1,14 @@
+---
+import Base from "../../layouts/Base.astro";
+import PostList from "../../components/PostList.astro";
+import { getPosts } from "../../lib/posts";
+
+const posts = await getPosts();
+---
+<Base title="전체 글" description="종갓의 IT블로그의 모든 글">
+  <header class="page-head">
+    <h1>전체 글</h1>
+    <p>글 {posts.length}개</p>
+  </header>
+  <PostList posts={posts} />
+</Base>

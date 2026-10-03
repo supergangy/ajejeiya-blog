@@ -1,0 +1,30 @@
+---
+import { postUrl, formatDate, categoryUrl, type Post } from "../lib/posts";
+
+interface Props { posts: Post[] }
+const { posts } = Astro.props;
+---
+{posts.length === 0 ? (
+  <p style="color: var(--muted)">아직 글이 없습니다.</p>
+) : (
+  <ul class="post-list">
+    {posts.map((post) => (
+      <li class="post-item">
+        <div>
+          <div class="meta">
+            <a href={categoryUrl(post.data.category)}>{post.data.category}</a>
+            <span aria-hidden="true">·</span>
+            <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
+          </div>
+          <h2><a href={postUrl(post)}>{post.data.title}</a></h2>
+          <p>{post.data.description}</p>
+        </div>
+        {post.data.cover && (
+          <a class="thumb" href={postUrl(post)} tabindex="-1" aria-hidden="true">
+            <img src={post.data.cover} alt="" loading="lazy" width="168" height="168" />
+          </a>
+        )}
+      </li>
+    ))}
+  </ul>
+)}

@@ -1,0 +1,16 @@
+{
+  "name": "ajejeiya-blog",
+  "description": "종갓의 IT블로그 (ajejeiya.cloud)",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "type": "module",
+  "dependencies": {
+    "@astrojs/rss": "^4.0.19",
+    "@astrojs/sitemap": "^3.7.4",
+    "astro": "^7.3.5"
+  },
+  "private": true
+}

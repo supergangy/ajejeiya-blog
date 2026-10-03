@@ -1,0 +1,17 @@
+---
+import Base from "../../layouts/Base.astro";
+import { getPosts, countBy, categoryUrl } from "../../lib/posts";
+
+const categories = countBy(await getPosts(), (p) => [p.data.category]);
+---
+<Base title="카테고리" description="카테고리별 글 모아보기">
+  <header class="page-head">
+    <h1>카테고리</h1>
+    <p>카테고리 {categories.length}개</p>
+  </header>
+  <ul class="term-list">
+    {categories.map(([name, count]) => (
+      <li><a href={categoryUrl(name)}>{name}<span>{count}</span></a></li>
+    ))}
+  </ul>
+</Base>

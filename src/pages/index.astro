@@ -1,0 +1,27 @@
+---
+import Base from "../layouts/Base.astro";
+import PostList from "../components/PostList.astro";
+import { getPosts, countBy, categoryUrl } from "../lib/posts";
+import { SITE_DESCRIPTION } from "../consts";
+
+const posts = await getPosts();
+const categories = countBy(posts, (p) => [p.data.category]);
+---
+<Base>
+  <section class="intro">
+    <h1>직접 만들고, 써 보고, 정리합니다</h1>
+    <p>{SITE_DESCRIPTION} 만든 프로그램은 모두 무료로 공개해요.</p>
+  </section>
+
+  {categories.length > 0 && (
+    <ul class="term-list" aria-label="카테고리">
+      {categories.map(([name, count]) => (
+        <li><a href={categoryUrl(name)}>{name}<span>{count}</span></a></li>
+      ))}
+    </ul>
+  )}
+
+  <h2 class="section-title">최근 글</h2>
+  <PostList posts={posts.slice(0, 10)} />
+  {posts.length > 10 && <p style="margin-top:20px"><a href="/blog/">글 전체 보기 →</a></p>}
+</Base>

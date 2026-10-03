@@ -1,0 +1,59 @@
+---
+import { render } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import AdSlot from "../../components/AdSlot.astro";
+import { getPosts, postUrl, formatDate, readingMinutes, categoryUrl, tagUrl, type Post } from "../../lib/posts";
+import { ADSENSE_SLOTS } from "../../consts";
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((post, i) => ({
+    params: { slug: post.id },
+    // 목록은 최신순이므로 '다음 글'은 더 최근 글, '이전 글'은 더 오래된 글
+    props: { post, newer: posts[i - 1], older: posts[i + 1] },
+  }));
+}
+
+interface Props { post: Post; newer?: Post; older?: Post }
+const { post, newer, older } = Astro.props;
+const { Content } = await render(post);
+const { title, description, pubDate, updatedDate, category, tags, cover } = post.data;
+---
+<Base title={title} description={description} image={cover} type="article">
+  <article>
+    <header class="post-head">
+      <div class="meta">
+        <a href={categoryUrl(category)}>{category}</a>
+        <span aria-hidden="true">·</span>
+        <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
+        {updatedDate && <span>(수정 {formatDate(updatedDate)})</span>}
+        <span aria-hidden="true">·</span>
+        <span>{readingMinutes(post.body)}분 읽기</span>
+      </div>
+      <h1>{title}</h1>
+      <p class="lede">{description}</p>
+    </header>
+
+    <AdSlot slot={ADSENSE_SLOTS.postTop} />
+
+    <div class="prose">
+      <Content />
+    </div>
+
+    <AdSlot slot={ADSENSE_SLOTS.postBottom} />
+
+    <footer class="post-foot">
+      {tags.length > 0 && (
+        <div class="chips" aria-label="태그">
+          {tags.map((tag) => <a class="chip" href={tagUrl(tag)}>#{tag}</a>)}
+        </div>
+      )}
+      {(older || newer) && (
+        <nav class="pager" aria-label="다른 글">
+          {older && <a class="prev" href={postUrl(older)}><small>← 이전 글</small>{older.data.title}</a>}
+          {newer && <a class="next" href={postUrl(newer)}><small>다음 글 →</small>{newer.data.title}</a>}
+        </nav>
+      )}
+    </footer>
+  </article>
+</Base>

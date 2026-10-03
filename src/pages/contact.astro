@@ -1,0 +1,24 @@
+---
+import Base from "../layouts/Base.astro";
+import { GITHUB_URL, NAVER_BLOG_URL } from "../consts";
+---
+<Base title="문의" description="블로그와 프로그램에 대한 문의 방법">
+  <header class="page-head">
+    <h1>문의</h1>
+    <p>궁금한 점, 오류 제보, 기능 제안 모두 환영합니다.</p>
+  </header>
+  <div class="prose">
+    <h2>프로그램 관련</h2>
+    <p>
+      오류나 기능 제안은 각 프로그램 GitHub 저장소의 <b>Issues</b>에 남겨 주시면 가장 빨리 확인합니다.
+      GitHub 계정이 필요합니다.
+    </p>
+    <ul>
+      <li>PDF OCR 프로그램: <a href="https://github.com/supergangy/pdf-ocr-korean/issues">github.com/supergangy/pdf-ocr-korean/issues</a></li>
+      <li>전체 저장소: <a href={GITHUB_URL}>{GITHUB_URL}</a></li>
+    </ul>
+
+    <h2>그 밖의 문의</h2>
+    <p>네이버 블로그 댓글이나 안부글로 남겨 주셔도 됩니다: <a href={NAVER_BLOG_URL}>{NAVER_BLOG_URL}</a></p>
+  </div>
+</Base>
